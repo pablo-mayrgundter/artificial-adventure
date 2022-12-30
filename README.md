@@ -9,7 +9,7 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun dev
 ```
 
 This project was created using `bun init` in bun v0.4.0.
