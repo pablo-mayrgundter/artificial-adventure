@@ -26,7 +26,10 @@
       </div>
     </div>
     <div id="board">
-      <div id="reply"></div>
+      <div id="reply">
+        <h2>Your Turn</h2>
+        <div id="reply-content"></div>
+      </div>
       <div id="console">
         <img id="scene" src="opening-scene.png" alt="AI rendering of game scene" width="512" height="512"/>
         <form name="controls" action="none">
@@ -36,6 +39,20 @@
           <textarea id="prompt" rows="5" cols="60"></textarea>
         </form>
       </div>
-      <div id="script"></div>
+      <div id="script">
+        <form name="story" action="none">
+          <select name="opening" id="opening-select">
+            <option
+              value="The setting of the game is an alien planet where I\'ve crash landed"
+              selected
+              >
+              Crash Landing
+            </option>
+            <option value="If Breaking Bad's Walt &amp; Jesse decided to cook acid instead of meth.  My character is Walt">Breaking Rad</option>
+          </select>
+        </form>
+        <h2>History</h2>
+        <div id="script-content"></div>
+      </div>
     </div>
     <script type="module" src="./bundle.js"></script>

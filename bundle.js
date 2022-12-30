@@ -2475,13 +2475,14 @@
 
   // index.js
   var import_openai = __toESM(require_dist(), 1);
-  var openai;
   var controls = document.forms.controls;
-  var replyElt = document.getElementById("reply");
-  var scriptElt = document.getElementById("script");
+  var replyElt = document.getElementById("reply-content");
   var sceneElt = document.getElementById("scene");
+  var scriptElt = document.getElementById("script");
+  var scriptContentElt = document.getElementById("script-content");
   var promptGamePrefix = "You are a text-based adventure game, similar to Zork.  You describe where I am and what is around me. After that, present me short numbered list of choices for what I may do next.  Then I make a choice, and you respond by telling me what happens next, and then prompt me to make my next decision, and so on.";
-  var gameState = "The setting of the game is an alien planet where I've crash landed\n\n";
+  var gameState;
+  var openai;
   async function sendPrompt(prompt) {
     const req = {
       model: "text-davinci-003",
@@ -2500,20 +2501,22 @@
   }
   async function nextTurn() {
     gameState += replyElt.innerText;
-    scriptElt.innerText = gameState;
+    scriptContentElt.innerText = gameState;
     const humanPlay = controls.prompt.value;
     controls.prompt.value = "";
     gameState += `
 
  Your play: ${humanPlay}
  Game: `;
-    scriptElt.innerText = gameState;
+    scriptContentElt.innerText = gameState;
     scriptElt.scrollTo(0, scriptElt.scrollHeight);
     const reply = await sendPrompt(promptGamePrefix + gameState);
     replyElt.innerText = reply;
     const match = reply.match(/(^.*\.)([^.]+\s*\n\s*1.*)/m);
     if (match && match.length > 1 && typeof match[1] === "string") {
       createImage(match[1]);
+    } else {
+      createImage(reply);
     }
   }
   function onSubmit() {
@@ -2530,10 +2533,15 @@
     const imageUrl = response.data.data[0].url;
     scene.src = imageUrl;
   }
+  function loadGameState() {
+    gameState = document.forms.story.opening.value;
+    scriptContentElt.innerText = gameState;
+  }
+  document.getElementById("opening-select").onchange = loadGameState;
   controls.prompt.value = "Ok, I'm ready to play";
   controls.submit.onclick = onSubmit;
   replyElt.innerText = "";
-  scriptElt.innerText = gameState;
+  loadGameState();
   var apiKey;
   function loadApiKey() {
     const apiKeyElt = document.getElementById("api-key");

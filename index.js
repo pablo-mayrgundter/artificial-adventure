@@ -1,16 +1,17 @@
 import {Configuration, OpenAIApi} from 'openai'
 
 
-let openai
 
 const controls = document.forms.controls
-const replyElt = document.getElementById('reply')
-const scriptElt = document.getElementById('script')
+const replyElt = document.getElementById('reply-content')
 const sceneElt = document.getElementById('scene')
+const scriptElt = document.getElementById('script')
+const scriptContentElt = document.getElementById('script-content')
 
 const promptGamePrefix = 'You are a text-based adventure game, similar to Zork.  You describe where I am and what is around me. After that, present me short numbered list of choices for what I may do next.  Then I make a choice, and you respond by telling me what happens next, and then prompt me to make my next decision, and so on.'
 
-let gameState = 'The setting of the game is an alien planet where I\'ve crash landed\n\n'
+let gameState
+let openai
 
 
 async function sendPrompt(prompt) {
@@ -35,7 +36,7 @@ async function sendPrompt(prompt) {
 async function nextTurn() {
   // Get the AI's last reply
   gameState += replyElt.innerText
-  scriptElt.innerText = gameState
+  scriptContentElt.innerText = gameState
 
   // Then the human's
   const humanPlay = controls.prompt.value
@@ -43,7 +44,7 @@ async function nextTurn() {
   gameState += `\n\n Your play: ${humanPlay}\n Game: `
 
   // Add it to the display script
-  scriptElt.innerText = gameState
+  scriptContentElt.innerText = gameState
   scriptElt.scrollTo(0, scriptElt.scrollHeight);
 
   // Send game state to server
@@ -56,6 +57,8 @@ async function nextTurn() {
   if (match && match.length > 1 && typeof match[1] === 'string') {
     // Use description for an image
     createImage(match[1])
+  } else {
+    createImage(reply)
   }
 }
 
@@ -77,10 +80,16 @@ async function createImage(imgPrompt) {
 }
 
 
+function loadGameState() {
+  gameState = document.forms.story.opening.value
+  scriptContentElt.innerText = gameState
+}
+document.getElementById('opening-select').onchange = loadGameState
+
 controls.prompt.value = 'Ok, I\'m ready to play'
 controls.submit.onclick = onSubmit
 replyElt.innerText = ''
-scriptElt.innerText = gameState
+loadGameState()
 
 
 let apiKey
