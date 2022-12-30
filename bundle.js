@@ -1,4 +1,3 @@
-"use strict";
 (() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
@@ -2535,7 +2534,7 @@
   controls.submit.onclick = onSubmit;
   replyElt.innerText = "";
   scriptElt.innerText = gameState;
-  var apiKey = process.env.OPENAI_API_KEY;
+  var apiKey;
   function loadApiKey() {
     const apiKeyElt = document.getElementById("api-key");
     apiKeyElt.onchange = () => {
