@@ -1,4 +1,5 @@
 # artificial-adventure
+![image](https://raw.githubusercontent.com/pablo-mayrgundter/artificial-adventure/main/opening-scene.png)
 
 To install dependencies:
 
