@@ -1,7 +1,3 @@
 node_modules
 
 *.log
-
-# bun
-*.bun
-bun.lockb

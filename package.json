@@ -1,11 +1,14 @@
 {
-  "name": "openai",
-  "module": "index.ts",
+  "name": "artificial-adventure",
+  "module": "index.js",
   "type": "module",
-  "devDependencies": {
-    "bun-types": "^0.3.0"
+  "scripts": {
+    "build": "esbuild --bundle=true index.js > bundle.js"
   },
   "dependencies": {
     "openai": "^3.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.16.12"
   }
 }
