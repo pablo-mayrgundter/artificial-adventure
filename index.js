@@ -83,7 +83,7 @@ replyElt.innerText = ''
 scriptElt.innerText = gameState
 
 
-let apiKey = process.env.OPENAI_API_KEY
+let apiKey
 function loadApiKey() {
   const apiKeyElt = document.getElementById('api-key')
   apiKeyElt.onchange = () => {
