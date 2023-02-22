@@ -18,9 +18,8 @@ async function sendPrompt(prompt) {
     prompt,
     stop: [' Your play:', ' Game:'],
   }
-  const response = await altQuery(req) // await openai.createCompletion(req)
+  let reply = await altQuery(req) // await openai.createCompletion(req)
   // TODO(pablo): Replies are prefixed with spaces
-  let reply = response.data.choices[0].text
   reply = reply.replace(/\s+/, '')
   return reply
 }

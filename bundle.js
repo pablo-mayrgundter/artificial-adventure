@@ -2488,8 +2488,7 @@
       prompt,
       stop: [" Your play:", " Game:"]
     };
-    const response = await altQuery(req);
-    let reply = response.data.choices[0].text;
+    let reply = await altQuery(req);
     reply = reply.replace(/\s+/, "");
     return reply;
   }
@@ -2522,7 +2521,7 @@
     const response = await openai.createImage({
       prompt: imgPrompt,
       n: 1,
-      size: "256x256"
+      size: "512x512"
     });
     const imageUrl = response.data.data[0].url;
     scene.src = imageUrl;
