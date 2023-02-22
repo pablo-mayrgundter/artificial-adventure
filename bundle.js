@@ -2485,16 +2485,10 @@
   var openai;
   async function sendPrompt(prompt) {
     const req = {
-      model: "text-davinci-003",
       prompt,
-      temperature: 0.9,
-      max_tokens: 150,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0.6,
       stop: [" Your play:", " Game:"]
     };
-    const response = await openai.createCompletion(req);
+    const response = await altQuery(req);
     let reply = response.data.choices[0].text;
     reply = reply.replace(/\s+/, "");
     return reply;
@@ -2528,7 +2522,7 @@
     const response = await openai.createImage({
       prompt: imgPrompt,
       n: 1,
-      size: "512x512"
+      size: "256x256"
     });
     const imageUrl = response.data.data[0].url;
     scene.src = imageUrl;
@@ -2557,5 +2551,32 @@
       const configuration = new import_openai.Configuration({ apiKey });
       openai = new import_openai.OpenAIApi(configuration);
     }
+  }
+  var DEFAULT_PARAMS = {
+    model: "text-davinci-003",
+    temperature: 0.7,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    stop: [" Your play:", " Game:"]
+  };
+  async function altQuery(params = {}) {
+    const params_ = { ...DEFAULT_PARAMS, ...params };
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(params_)
+    };
+    const response = await fetch("https://api.openai.com/v1/completions", requestOptions);
+    const data = await response.json();
+    if (data.error) {
+      alert(`${data.error.message} (openai.com)`);
+      throw new Error(data.error.message);
+    }
+    return data.choices[0].text;
   }
 })();

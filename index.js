@@ -1,7 +1,6 @@
 import {Configuration, OpenAIApi} from 'openai'
 
 
-
 const controls = document.forms.controls
 const replyElt = document.getElementById('reply-content')
 const sceneElt = document.getElementById('scene')
@@ -16,16 +15,10 @@ let openai
 
 async function sendPrompt(prompt) {
   const req = {
-    model: 'text-davinci-003',
     prompt,
-    temperature: 0.9,
-    max_tokens: 150,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0.6,
     stop: [' Your play:', ' Game:'],
   }
-  const response = await openai.createCompletion(req)
+  const response = await altQuery(req) // await openai.createCompletion(req)
   // TODO(pablo): Replies are prefixed with spaces
   let reply = response.data.choices[0].text
   reply = reply.replace(/\s+/, '')
@@ -69,6 +62,7 @@ function onSubmit() {
   nextTurn()
 }
 
+
 async function createImage(imgPrompt) {
   const response = await openai.createImage({
     prompt: imgPrompt,
@@ -108,4 +102,34 @@ function loadApiKey() {
     const configuration = new Configuration({apiKey})
     openai = new OpenAIApi(configuration)
   }
+}
+
+
+const DEFAULT_PARAMS = {
+  model: "text-davinci-003",
+  temperature: 0.7,
+  max_tokens: 256,
+  top_p: 1,
+  frequency_penalty: 0,
+  presence_penalty: 0,
+  stop: [' Your play:', ' Game:'],
+}
+// https://stackoverflow.com/questions/72326140/openai-api-refused-to-set-unsafe-header-user-agent
+async function altQuery(params = {}) {
+  const params_ = { ...DEFAULT_PARAMS, ...params }
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(params_)
+  }
+  const response = await fetch('https://api.openai.com/v1/completions', requestOptions)
+  const data = await response.json()
+  if (data.error) {
+    alert(`${data.error.message} (openai.com)`)
+    throw new Error(data.error.message)
+  }
+  return data.choices[0].text
 }
