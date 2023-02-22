@@ -62,13 +62,17 @@ function onSubmit() {
 }
 
 
+let lastImageB64
 async function createImage(imgPrompt) {
   const response = await openai.createImage({
     prompt: imgPrompt,
     n: 1,
     size: '512x512',
+    response_format: 'b64_json',
   })
-  const imageUrl = response.data.data[0].url
+  lastImageB64 = response.data.data[0].b64_json
+  // TODO: use last image as prior for next.
+  const imageUrl = `data:image/png;base64, ${lastImageB64}`
   scene.src = imageUrl
 }
 
@@ -104,14 +108,14 @@ function loadApiKey() {
 }
 
 
+// https://platform.openai.com/docs/api-reference/completions/create#completions/create-model
 const DEFAULT_PARAMS = {
   model: "text-davinci-003",
-  temperature: 0.7,
-  max_tokens: 256,
+  temperature: 0.8,
+  max_tokens: 512,
   top_p: 1,
-  frequency_penalty: 0,
-  presence_penalty: 0,
-  stop: [' Your play:', ' Game:'],
+  frequency_penalty: 0.25,
+  presence_penalty: 0.25,
 }
 // https://stackoverflow.com/questions/72326140/openai-api-refused-to-set-unsafe-header-user-agent
 async function altQuery(params = {}) {

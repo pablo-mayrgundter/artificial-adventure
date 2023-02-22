@@ -2517,13 +2517,16 @@
     loadApiKey();
     nextTurn();
   }
+  var lastImageB64;
   async function createImage(imgPrompt) {
     const response = await openai.createImage({
       prompt: imgPrompt,
       n: 1,
-      size: "512x512"
+      size: "512x512",
+      response_format: "b64_json"
     });
-    const imageUrl = response.data.data[0].url;
+    lastImageB64 = response.data.data[0].b64_json;
+    const imageUrl = `data:image/png;base64, ${lastImageB64}`;
     scene.src = imageUrl;
   }
   function loadGameState() {
@@ -2553,12 +2556,11 @@
   }
   var DEFAULT_PARAMS = {
     model: "text-davinci-003",
-    temperature: 0.7,
-    max_tokens: 256,
+    temperature: 0.8,
+    max_tokens: 512,
     top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    stop: [" Your play:", " Game:"]
+    frequency_penalty: 0.25,
+    presence_penalty: 0.25
   };
   async function altQuery(params = {}) {
     const params_ = { ...DEFAULT_PARAMS, ...params };
