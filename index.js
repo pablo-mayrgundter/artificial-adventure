@@ -1,6 +1,3 @@
-import {Configuration, OpenAIApi} from 'openai'
-
-
 const controls = document.forms.controls
 const replyElt = document.getElementById('reply-content')
 const sceneElt = document.getElementById('scene')
@@ -10,7 +7,6 @@ const scriptContentElt = document.getElementById('script-content')
 const promptGamePrefix = 'You are a text-based adventure game, similar to Zork.  You describe where I am and what is around me. After that, present me short numbered list of choices for what I may do next.  Then I make a choice, and you respond by telling me what happens next, and then prompt me to make my next decision, and so on.'
 
 let gameState
-let openai
 
 
 async function sendPrompt(prompt) {
@@ -64,13 +60,26 @@ function onSubmit() {
 
 let lastImageB64
 async function createImage(imgPrompt) {
-  const response = await openai.createImage({
-    prompt: imgPrompt,
-    n: 1,
-    size: '512x512',
-    response_format: 'b64_json',
-  })
-  lastImageB64 = response.data.data[0].b64_json
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      prompt: imgPrompt,
+      n: 1,
+      size: '512x512',
+      response_format: 'b64_json',
+    })
+  }
+  const response = await fetch('https://api.openai.com/v1/images/generations', requestOptions)
+  const data = await response.json()
+  if (data.error) {
+    alert(`${data.error.message} (openai.com)`)
+    throw new Error(data.error.message)
+  }
+  lastImageB64 = data.data[0].b64_json
   // TODO: use last image as prior for next.
   const imageUrl = `data:image/png;base64, ${lastImageB64}`
   scene.src = imageUrl
@@ -100,10 +109,6 @@ function loadApiKey() {
   if (!(apiKey && apiKey.length > 10)) {
     console.error('Need an api-key')
     return
-  }
-  if (openai === undefined) {
-    const configuration = new Configuration({apiKey})
-    openai = new OpenAIApi(configuration)
   }
 }
 
