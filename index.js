@@ -11,10 +11,10 @@ let gameState
 
 async function sendPrompt(prompt) {
   const req = {
-    prompt,
+    input: prompt,
     stop: [' Your play:', ' Game:'],
   }
-  let reply = await altQuery(req) // await openai.createCompletion(req)
+  let reply = await altQuery(req)
   // TODO(pablo): Replies are prefixed with spaces
   reply = reply.replace(/\s+/, '')
   return reply
@@ -82,7 +82,7 @@ async function createImage(imgPrompt) {
   lastImageB64 = data.data[0].b64_json
   // TODO: use last image as prior for next.
   const imageUrl = `data:image/png;base64, ${lastImageB64}`
-  scene.src = imageUrl
+  sceneElt.src = imageUrl
 }
 
 
@@ -113,11 +113,11 @@ function loadApiKey() {
 }
 
 
-// https://platform.openai.com/docs/api-reference/completions/create#completions/create-model
+// https://platform.openai.com/docs/api-reference/responses/create
 const DEFAULT_PARAMS = {
-  model: "text-davinci-003",
+  model: "gpt-4o-mini",
   temperature: 0.8,
-  max_tokens: 512,
+  max_output_tokens: 512,
   top_p: 1,
   frequency_penalty: 0.25,
   presence_penalty: 0.25,
@@ -133,11 +133,15 @@ async function altQuery(params = {}) {
     },
     body: JSON.stringify(params_)
   }
-  const response = await fetch('https://api.openai.com/v1/completions', requestOptions)
+  const response = await fetch('https://api.openai.com/v1/responses', requestOptions)
   const data = await response.json()
   if (data.error) {
     alert(`${data.error.message} (openai.com)`)
     throw new Error(data.error.message)
   }
-  return data.choices[0].text
+  const output = data.output?.[0]?.content?.find((item) => item.type === 'output_text')
+  if (!output?.text) {
+    throw new Error('No output text returned from OpenAI.')
+  }
+  return output.text
 }
