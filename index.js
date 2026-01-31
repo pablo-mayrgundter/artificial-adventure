@@ -51,8 +51,17 @@ function onSubmit() {
 }
 
 
-let lastImageB64
+const MAX_REFERENCE_IMAGES = 3
+let recentImageB64s = []
 async function createImage(imgPrompt, imageElt) {
+  const trimmedPrompt = imgPrompt.trim()
+  const promptWithContinuity = recentImageB64s.length
+    ? `${trimmedPrompt}\nMaintain consistent style, using the attached reference frames for continuity.`
+    : trimmedPrompt
+  const imageInputs = recentImageB64s.map((b64) => ({
+    type: 'input_image',
+    image_url: `data:image/png;base64,${b64}`,
+  }))
   const requestOptions = {
     method: 'POST',
     headers: {
@@ -60,21 +69,33 @@ async function createImage(imgPrompt, imageElt) {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      prompt: imgPrompt,
-      n: 1,
+      model: 'gpt-image-1',
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: promptWithContinuity },
+            ...imageInputs,
+          ],
+        },
+      ],
       size: '512x512',
-      response_format: 'b64_json',
     })
   }
-  const response = await fetch('https://api.openai.com/v1/images/generations', requestOptions)
+  const response = await fetch('https://api.openai.com/v1/responses', requestOptions)
   const data = await response.json()
   if (data.error) {
     alert(`${data.error.message} (openai.com)`)
     throw new Error(data.error.message)
   }
-  lastImageB64 = data.data[0].b64_json
-  // TODO: use last image as prior for next.
-  const imageUrl = `data:image/png;base64, ${lastImageB64}`
+  const outputImage = data.output
+    ?.flatMap((item) => item.content || [])
+    .find((item) => item.type === 'output_image' || item.type === 'image')
+  if (!outputImage?.b64_json) {
+    throw new Error('No output image returned from OpenAI.')
+  }
+  recentImageB64s = [outputImage.b64_json, ...recentImageB64s].slice(0, MAX_REFERENCE_IMAGES)
+  const imageUrl = `data:image/png;base64, ${outputImage.b64_json}`
   imageElt.src = imageUrl
 }
 
@@ -82,6 +103,7 @@ async function createImage(imgPrompt, imageElt) {
 function loadGameState() {
   gameState = document.forms.story.opening.value
   historyLogElt.innerHTML = ''
+  recentImageB64s = []
   addLogEntry({
     humanPlay: 'Game start',
     reply: gameState,
