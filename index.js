@@ -12,7 +12,6 @@ let gameState
 async function sendPrompt(prompt) {
   const req = {
     input: prompt,
-    stop: [' Your play:', ' Game:'],
   }
   let reply = await altQuery(req)
   // TODO(pablo): Replies are prefixed with spaces
