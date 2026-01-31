@@ -4,7 +4,8 @@
   "type": "module",
   "packageManager": "bun@1.1.0",
   "scripts": {
-    "build": "esbuild --bundle=true index.js > bundle.js"
+    "build": "esbuild --bundle=true index.js > bundle.js",
+    "test": "bun test"
   },
   "dependencies": {
     "openai": "^4.104.0"
