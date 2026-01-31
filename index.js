@@ -93,6 +93,7 @@ document.getElementById('opening-select').onchange = loadGameState
 controls.prompt.value = 'Ok, I\'m ready to play'
 controls.submit.onclick = onSubmit
 replyElt.innerText = ''
+setupApiKeyInput()
 loadGameState()
 
 
@@ -117,17 +118,50 @@ function addLogEntry({ humanPlay, reply, imageUrl }) {
 
 
 let apiKey
+const apiKeyCookieName = 'openai_api_key'
+
+function readCookie(name) {
+  const cookie = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`))
+  if (!cookie) {
+    return ''
+  }
+  return decodeURIComponent(cookie.split('=')[1] || '')
+}
+
+function writeCookie(name, value) {
+  const maxAge = 60 * 60 * 24 * 365
+  const secure = window.location.protocol === 'https:' ? '; secure' : ''
+  document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; samesite=strict${secure}`
+}
+
+function applyApiKey(value, { persist } = { persist: false }) {
+  apiKey = value
+  if (persist) {
+    writeCookie(apiKeyCookieName, value)
+  }
+}
+
 function loadApiKey() {
   const apiKeyElt = document.getElementById('api-key')
-  apiKeyElt.onchange = () => {
-    // apiKeyElt.blur()
-    document.getElementById('prompt').focus()
-  }
-  apiKey = apiKeyElt.value
+  applyApiKey(apiKeyElt.value, { persist: true })
   if (!(apiKey && apiKey.length > 10)) {
     console.error('Need an api-key')
-    return
   }
+}
+
+function setupApiKeyInput() {
+  const apiKeyElt = document.getElementById('api-key')
+  const storedApiKey = readCookie(apiKeyCookieName)
+  if (storedApiKey) {
+    apiKeyElt.value = storedApiKey
+    applyApiKey(storedApiKey)
+  }
+  apiKeyElt.addEventListener('change', () => {
+    loadApiKey()
+    document.getElementById('prompt').focus()
+  })
 }
 
 
