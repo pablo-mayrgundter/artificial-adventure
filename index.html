@@ -39,33 +39,32 @@
         <h2>Your Turn</h2>
         <div id="reply-content"></div>
       </div>
-      <div id="console">
-        <img id="scene" src="opening-scene.png" alt="AI rendering of game scene" width="512" height="512"/>
+      <div id="history">
+        <div id="history-header">
+          <form name="story" action="none">
+            <select name="opening" id="opening-select">
+              <option
+                value="The setting of the game is an alien planet where the player has crash landed"
+                selected
+                >
+                Crash Landing
+              </option>
+              <option
+                value="If Breaking Bad's Walt &amp; Jesse decided to cook acid instead of meth.  The player is Walt"
+                >
+                Breaking Rad
+              </option>
+            </select>
+          </form>
+          <h2>History</h2>
+        </div>
+        <div id="history-log"></div>
         <form name="controls" action="none">
           <div id="button-container">
             <button id="submit" type="submit">Go</button>
           </div>
           <textarea id="prompt" rows="5" cols="60"></textarea>
         </form>
-      </div>
-      <div id="script">
-        <form name="story" action="none">
-          <select name="opening" id="opening-select">
-            <option
-              value="The setting of the game is an alien planet where the player has crash landed"
-              selected
-              >
-              Crash Landing
-            </option>
-            <option
-              value="If Breaking Bad's Walt &amp; Jesse decided to cook acid instead of meth.  The player is Walt"
-              >
-              Breaking Rad
-            </option>
-          </select>
-        </form>
-        <h2>History</h2>
-        <div id="script-content"></div>
       </div>
     </div>
     <script type="module" src="./bundle.js"></script>

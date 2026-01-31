@@ -1,8 +1,6 @@
 const controls = document.forms.controls
 const replyElt = document.getElementById('reply-content')
-const sceneElt = document.getElementById('scene')
-const scriptElt = document.getElementById('script')
-const scriptContentElt = document.getElementById('script-content')
+const historyLogElt = document.getElementById('history-log')
 
 const promptGamePrefix = 'You are a text-based adventure game, similar to Zork.  You describe where I am and what is around me. After that, present me short numbered list of choices for what I may do next.  Then I make a choice, and you respond by telling me what happens next, and then prompt me to make my next decision, and so on.'
 
@@ -23,16 +21,9 @@ async function sendPrompt(prompt) {
 async function nextTurn() {
   // Get the AI's last reply
   gameState += replyElt.innerText
-  scriptContentElt.innerText = gameState
-
-  // Then the human's
   const humanPlay = controls.prompt.value
   controls.prompt.value = ''
   gameState += `\n\n Your play: ${humanPlay}\n Game: `
-
-  // Add it to the display script
-  scriptContentElt.innerText = gameState
-  scriptElt.scrollTo(0, scriptElt.scrollHeight);
 
   // Send game state to server
   const reply = await sendPrompt(promptGamePrefix + gameState)
@@ -41,12 +32,15 @@ async function nextTurn() {
 
   // Try to parse description
   const match = reply.match(/(^.*\.)([^.]+\s*\n\s*1.*)/m)
-  if (match && match.length > 1 && typeof match[1] === 'string') {
-    // Use description for an image
-    createImage(match[1])
-  } else {
-    createImage(reply)
-  }
+  const logEntry = addLogEntry({
+    humanPlay,
+    reply,
+  })
+  const imagePrompt = match && match.length > 1 && typeof match[1] === 'string'
+    ? match[1]
+    : reply
+  createImage(imagePrompt, logEntry.image)
+  historyLogElt.scrollTo(0, historyLogElt.scrollHeight)
 }
 
 
@@ -58,7 +52,7 @@ function onSubmit() {
 
 
 let lastImageB64
-async function createImage(imgPrompt) {
+async function createImage(imgPrompt, imageElt) {
   const requestOptions = {
     method: 'POST',
     headers: {
@@ -81,13 +75,18 @@ async function createImage(imgPrompt) {
   lastImageB64 = data.data[0].b64_json
   // TODO: use last image as prior for next.
   const imageUrl = `data:image/png;base64, ${lastImageB64}`
-  sceneElt.src = imageUrl
+  imageElt.src = imageUrl
 }
 
 
 function loadGameState() {
   gameState = document.forms.story.opening.value
-  scriptContentElt.innerText = gameState
+  historyLogElt.innerHTML = ''
+  addLogEntry({
+    humanPlay: 'Game start',
+    reply: gameState,
+    imageUrl: 'opening-scene.png',
+  })
 }
 document.getElementById('opening-select').onchange = loadGameState
 
@@ -95,6 +94,26 @@ controls.prompt.value = 'Ok, I\'m ready to play'
 controls.submit.onclick = onSubmit
 replyElt.innerText = ''
 loadGameState()
+
+
+function addLogEntry({ humanPlay, reply, imageUrl }) {
+  const entry = document.createElement('div')
+  entry.className = 'log-entry'
+
+  const image = document.createElement('img')
+  image.alt = 'AI rendering of game scene'
+  image.src = imageUrl || ''
+
+  const text = document.createElement('div')
+  text.className = 'log-text'
+  text.innerText = `Your play: ${humanPlay}\n\nGame: ${reply}`
+
+  entry.appendChild(image)
+  entry.appendChild(text)
+  historyLogElt.appendChild(entry)
+
+  return { entry, image, text }
+}
 
 
 let apiKey
